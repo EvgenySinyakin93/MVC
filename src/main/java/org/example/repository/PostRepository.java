@@ -1,51 +1,55 @@
 package org.example.repository;
 
+import org.example.repository.IPostRepository;
+import org.springframework.stereotype.Repository;
 import org.example.exception.NotFoundException;
 import org.example.model.Post;
-
-import java.util.*;
-import java.util.concurrent.Callable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicLong;
 
-import static org.example.servlet.MainServlet.threadPool;
+@Repository
+public class PostRepository implements IPostRepository {
+    private final ConcurrentHashMap<Long, Post> posts;
+    private final AtomicLong idCounter = new AtomicLong(0L);
 
-// Stub
-public class PostRepository {
-
-    private static final ConcurrentHashMap<Long, Post> postMap = new ConcurrentHashMap<>();
+    public PostRepository()  {
+        posts  = new ConcurrentHashMap<>();
+    }
 
     public List<Post> all() {
-        if (postMap.isEmpty()) {
-            throw new NotFoundException("Список постов пуст");
-        }
-        List<Post> data = new ArrayList<>();
-        for (Map.Entry<Long, Post> entry : postMap.entrySet()) {
-            data.add(entry.getValue());
-        }
-        return data;
+        return new ArrayList<>(posts.values());
     }
 
     public Optional<Post> getById(long id) {
-        if (postMap.containsKey(id)) {
-            return Optional.ofNullable(postMap.get(id));
-        }
-        throw new NotFoundException("Неверный идентификатор поста");
+        return Optional.ofNullable(posts.get(id));
+
     }
 
-    public Post save(Post post) throws ExecutionException, InterruptedException {
-        if (postMap.containsKey(post.getId())) {
-            postMap.put(post.getId(), post);
-        } else {
-            Post newPost = new Post(post.getContent());
-            postMap.put(newPost.getId(), newPost);
-            return newPost;
+    public Post save(Post post) {
+        if(post.getId() != 0) {
+            if (!posts.containsKey(post.getId())) {
+                throw new NotFoundException();
+            } else {
+                posts.put(post.getId(), post);
+            }
+        }
+
+        if (post.getId() == 0) {
+            var newId = idCounter.incrementAndGet();
+            post.setId(newId);
+            posts.put(post.getId(), post);
         }
         return post;
     }
 
     public void removeById(long id) {
-        postMap.remove(id);
+        if (posts.containsKey(id)) {
+            posts.remove(id);
+        } else {
+            throw new NotFoundException("Wrong id");
+        }
     }
 }

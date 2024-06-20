@@ -1,16 +1,16 @@
 package org.example.service;
 
+import org.springframework.stereotype.Service;
 import org.example.exception.NotFoundException;
 import org.example.model.Post;
-import org.example.repository.PostRepository;
-
+import org.example.repository.IPostRepository;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
+@Service
 public class PostService {
-    private final PostRepository repository;
+    private final IPostRepository repository;
 
-    public PostService(PostRepository repository) {
+    public PostService(IPostRepository repository) {
         this.repository = repository;
     }
 
@@ -22,7 +22,7 @@ public class PostService {
         return repository.getById(id).orElseThrow(NotFoundException::new);
     }
 
-    public Post save(Post post) throws ExecutionException, InterruptedException {
+    public Post save(Post post) {
         return repository.save(post);
     }
 
