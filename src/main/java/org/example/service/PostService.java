@@ -3,18 +3,20 @@ package org.example.service;
 import org.springframework.stereotype.Service;
 import org.example.exception.NotFoundException;
 import org.example.model.Post;
-import org.example.repository.IPostRepository;
-import java.util.List;
+import org.example.repository.PostRepository;
+
+import java.util.Collection;
 
 @Service
 public class PostService {
-    private final IPostRepository repository;
+    // сервис завязан на интерфейс, а не на конкретную реализацию
+    private final PostRepository repository;
 
-    public PostService(IPostRepository repository) {
+    public PostService(PostRepository repository) {
         this.repository = repository;
     }
 
-    public List<Post> all() {
+    public Collection<Post> all() {
         return repository.all();
     }
 
